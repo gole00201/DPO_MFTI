@@ -1,3 +1,14 @@
+/**
+ * @file 11_min_sum.c
+ * @author Volkov Egor
+ * @brief Минимальная суммая
+ * @version 0.1
+ * @date 2024-05-21
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include <stdio.h>
 #define SIZE 30
 

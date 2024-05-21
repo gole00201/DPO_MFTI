@@ -1,3 +1,12 @@
+/**
+ * @file 20_odd_and_not_odd.c
+ * @author Volkov Egor
+ * @brief Произведение цифр тех... этих... с этими.. потому что эти... эти..
+ * @version 0.1
+ * @date 2024-05-21
+ * @copyright Copyright (c) 2024
+ */
+
 #include <stdio.h>
 #define SIZE 10
 
