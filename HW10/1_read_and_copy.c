@@ -15,18 +15,18 @@
 
 int main() {
     char str[MAX_LENGTH + 1];
-    FILE *inputFile = fopen("input.txt", "r");
-    FILE *outputFile = fopen("output.txt", "w");
-    if (inputFile == NULL || outputFile == NULL) {
+    FILE *input_file = fopen("input.txt", "r");
+    FILE *output_file = fopen("output.txt", "w");
+    if (input_file == NULL || output_file == NULL) {
         fprintf(stderr, "Ошибка открытия файлов: %s\n", strerror(errno));
         return 1;
     }
-    if (fgets(str, MAX_LENGTH + 1, inputFile) != NULL) {
+    if (fgets(str, MAX_LENGTH + 1, input_file) != NULL) {
         str[strcspn(str, "\r\n")] = '\0';
         size_t len = strlen(str);
-        fprintf(outputFile, "%s, %s, %s %zu\n", str, str, str, len);
+        fprintf(output_file, "%s, %s, %s %zu\n", str, str, str, len);
     }
-    fclose(inputFile);
-    fclose(outputFile);
+    fclose(input_file);
+    fclose(output_file);
     return 0;
 }
