@@ -17,7 +17,7 @@ typedef struct SCOPE_t
     /**
      * @brief Путь к файлу с данными
      */
-    char** csv_path;
+    char* csv_path;
     /**
      * @brief Необходимый месяц для рассчета
      */

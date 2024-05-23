@@ -1,9 +1,9 @@
 #include <parse_csv.h>
 
 int read_csv(SCOPE_t* state) {
-    FILE *file = fopen(*state->csv_path, "r");
+    FILE *file = fopen(state->csv_path, "r");
     if (file == NULL) {
-        fprintf(stderr, "Не удалось открыть файл: %s", *state->csv_path);
+        fprintf(stderr, "Не удалось открыть файл: %s", state->csv_path);
         return 0;
     }
     char cur_line[256];
@@ -17,13 +17,13 @@ int read_csv(SCOPE_t* state) {
     while(fgets(cur_line, sizeof(cur_line), file)){
         if(sscanf(cur_line,
                "%d;%d;%d;%d;%d;%d",
-               &state->data[state->data_cnt]->year,
-               &state->data[state->data_cnt]->mouth,
-               &state->data[state->data_cnt]->day,
-               &state->data[state->data_cnt]->hour,
-               &state->data[state->data_cnt]->minute,
-               &state->data[state->data_cnt]->temp) ){
-            fprintf(stderr, "Ошибка чтения строки из файла %s: %d", *state->csv_path, state->data_cnt);\
+               &state->data[state->data_cnt].year,
+               &state->data[state->data_cnt].mouth,
+               &state->data[state->data_cnt].day,
+               &state->data[state->data_cnt].hour,
+               &state->data[state->data_cnt].minute,
+               &state->data[state->data_cnt].temp) ){
+            fprintf(stderr, "Ошибка чтения строки из файла %s: %d", state->csv_path, state->data_cnt);\
             continue;
         } else {
             state->data_cnt++;
@@ -31,6 +31,8 @@ int read_csv(SCOPE_t* state) {
                 state->data = (DATA_ROW_t* ) realloc(state->data, (state->data_cnt + 10) * sizeof(DATA_ROW_t));
                 if(state->data == NULL){
                     fprintf(stderr, "Buy more RAM!!!! xD");
+                    free(state->data);
+                    fclose(file);
                     return 0;
                 }
                 alrady_alloced += 10;
