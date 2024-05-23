@@ -15,7 +15,7 @@ int parse_args(int argc, char** argv, SCOPE_t* state){
     }
     for(int i = 1; i < argc; i++){
         if(strcmp(argv[i], FILE_PATH) == 0 && i + 1 < argc){
-            *state->csv_path = argv[i + 1];
+            state->csv_path = argv[i + 1];
         } else if(strcmp(argv[i], MOUNTH) == 0 && i + 1 < argc){
             state->need_mouth = atoi(argv[i + 1]);
         }
