@@ -22,8 +22,8 @@ int read_csv(SCOPE_t* state) {
                &state->data[state->data_cnt].day,
                &state->data[state->data_cnt].hour,
                &state->data[state->data_cnt].minute,
-               &state->data[state->data_cnt].temp) ){
-            fprintf(stderr, "Ошибка чтения строки из файла %s: %d", state->csv_path, state->data_cnt);\
+               &state->data[state->data_cnt].temp) != 6 ){
+            fprintf(stderr, "Ошибка чтения строки из файла %s: %d\n", state->csv_path, state->data_cnt);
             continue;
         } else {
             state->data_cnt++;

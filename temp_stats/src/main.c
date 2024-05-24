@@ -14,6 +14,12 @@ int main(int argc, char** argv){
         return 1;
     }
     read_csv(&state);
+    if(state.need_mouth){
+        stats_one_mouth(state);
+    } else {
+        stats_per_mouth(state);
+        stats_per_year(state);
+    }
     free(state.data);
 }
 
