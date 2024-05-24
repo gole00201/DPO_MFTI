@@ -59,6 +59,10 @@ void stats_per_year(SCOPE_t state){
 void stats_one_mouth(SCOPE_t state){
     char mouth_name[20];
     int_to_mouth_name(mouth_name, state.need_mouth);
+    if(mouth_name[0] == 'N'){
+        fprintf(stderr, "Некорректный месяц %d\n", state.need_mouth);
+        return;
+    }
     printf("\t-------------------------------\n");
     printf("\t|    СТАТИСТИКА ЗА %s    |\n", mouth_name);
     printf("\t-------------------------------\n");

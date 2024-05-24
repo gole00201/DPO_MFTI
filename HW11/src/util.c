@@ -87,7 +87,7 @@ void int_to_mouth_name(char* dist, int number){
         strcpy(dist, "Декабрь");
         break;
     default:
-        printf("Некорректный месяц: %d", number);
+        strcpy(dist, "NON");
         break;
     }
 }

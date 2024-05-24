@@ -3,7 +3,7 @@
 int read_csv(SCOPE_t* state) {
     FILE *file = fopen(state->csv_path, "r");
     if (file == NULL) {
-        fprintf(stderr, "Не удалось открыть файл: %s", state->csv_path);
+        fprintf(stderr, "Не удалось открыть файл: %s\n", state->csv_path);
         return 0;
     }
     char cur_line[256];
@@ -30,7 +30,7 @@ int read_csv(SCOPE_t* state) {
             if(state->data_cnt >= alrady_alloced){
                 state->data = (DATA_ROW_t* ) realloc(state->data, (state->data_cnt + 10) * sizeof(DATA_ROW_t));
                 if(state->data == NULL){
-                    fprintf(stderr, "Buy more RAM!!!! xD");
+                    fprintf(stderr, "Buy more RAM!!!! xD\n");
                     free(state->data);
                     fclose(file);
                     return 0;
