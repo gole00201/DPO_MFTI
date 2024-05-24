@@ -71,7 +71,8 @@ void int_to_mouth_name(char* dist, int number){
     case 7:
         strcpy(dist, "Июль");
         break;
-    case 8:break;
+    case 8:
+        strcpy(dist, "Август");
         break;
     case 9:
         strcpy(dist, "Сентябрь");
