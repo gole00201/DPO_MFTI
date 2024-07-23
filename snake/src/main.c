@@ -41,7 +41,6 @@ static int counterTail = 0;
 static void InitGame(void);
 static void UpdateGame(void);
 static void DrawGame(void);
-static void UnloadGame(void);
 static void UpdateDrawFrame(void);
 
 
@@ -62,7 +61,6 @@ int main(void)
         UpdateDrawFrame();
     }
 #endif
-    UnloadGame();
     CloseWindow();
     return 0;
 }
@@ -107,7 +105,6 @@ void UpdateGame(void)
 
         if (!pause)
         {
-            // Player control
             if (IsKeyPressed(KEY_RIGHT) && (snake[0].speed.x == 0) && allowMove)
             {
                 snake[0].speed = (Vector2){ SQUARE_SIZE, 0 };
@@ -225,11 +222,6 @@ void DrawGame(void)
     EndDrawing();
 }
 
-
-void UnloadGame(void)
-{
-    // TODO: Unload all dynamic loaded data (textures, sounds, models...)
-}
 
 void UpdateDrawFrame(void)
 {
