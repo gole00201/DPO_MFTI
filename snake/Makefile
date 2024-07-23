@@ -4,7 +4,7 @@ GCC = gcc
 GCC_FLAG = -Wall -pedantic -std=c99 -Wno-missing-braces
 INC = -I ./inc/
 ifeq ($(UNAME), Linux)
-LINK = -L ./lib_unix -lraylib -lm
+LINK = -L ./lib_unix -lraylib -lm -pthread -ldl
 else
 LINK = -L ./lib_win -lraylib -lopengl32 -lgdi32 -lwinmm -lm
 endif
