@@ -9,21 +9,18 @@ uint32_t _pow(uint32_t n, uint32_t p){
     return res;
 }
 
-uint32_t get_mask(uint32_t n, uint32_t k){
-    return (_pow(2, k) - 1) & n;
-}
-
 int
 main( void ){
     uint32_t n, k, max, res;
     scanf("%u %u", &n, &k);
     uint32_t mask = _pow(2, k) - 1;
-    for(int i = 0; i < 32; i++){
-        if((n >> i) & 0x1){
-            max = i;
+    max = n & mask;
+    for(int i = 1; i < 31; i++){
+        uint32_t current = (n >> i) & mask;
+        if(max < current){
+            max = current;
         }
     }
-    res = (n & (mask << (max - (k - 1)))) >> (max - (k - 1));
-    printf("%u\n", res);
+    printf("%u\n", max);
     return 0;
 }
