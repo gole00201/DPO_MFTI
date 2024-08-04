@@ -106,9 +106,11 @@ void UpdateGame(void){
                 allowMove = false;
             }
 
-            for (int i = 0; i < counterTail; i++) snakePosition[i] = snake[i].position;
+            for (int i = 0; i < counterTail; i++){
+                snakePosition[i] = snake[i].position;
+            }
 
-            if ((framesCounter%5) == 0){
+            if ((framesCounter%7) == 0){
                 for (int i = 0; i < counterTail; i++){
                     if (i == 0){
                         snake[0].position.x += snake[0].speed.x;
@@ -127,7 +129,9 @@ void UpdateGame(void){
             }
 
             for (int i = 1; i < counterTail; i++){
-                if ((snake[0].position.x == snake[i].position.x) && (snake[0].position.y == snake[i].position.y)) gameOver = true;
+                if ((snake[0].position.x == snake[i].position.x) && (snake[0].position.y == snake[i].position.y)){
+                    gameOver = true;
+                }
             }
 
             if (!fruit.active){
