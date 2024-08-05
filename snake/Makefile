@@ -1,6 +1,3 @@
-# Под виндой вызовет error, ну и что.
-UNAME := $(shell uname)
-
 GCC = gcc
 GCC_FLAG = -Wall -pedantic -std=c99 -Wno-missing-braces
 INC = -I ./inc/
@@ -8,17 +5,15 @@ SRC = ./src/main.c
 BUILD_PATH = ./build/snake_game
 
 # -----------------------------------------------------------
-ifeq ($(UNAME), Linux)
+ifeq ($(ARCH), unix)
 LINK = -L ./lib_unix -lraylib -lm -pthread -ldl
-else
-# Да, это тупо. Очень тупо. Просто безумно тупо.
-ARCH := $(shell echo %PROCESSOR_ARCHITECTURE%)
-ifeq ($(ARCH), x86)
+endif
+ifeq ($(ARCH), win86)
 LINK = -L ./lib_win/x86 -lraylib -lopengl32 -lgdi32 -lwinmm -lm
-else
+endif
+ifeq ($(ARCH), win64)
 LINK = -L ./lib_win/x64 -lraylib -lopengl32 -lgdi32 -lwinmm -lm
 endif # ARCH
-endif # UNAME
 # -----------------------------------------------------------
 
 all:
