@@ -56,7 +56,7 @@ cd ./DPO_MFTI/snake
 Компиляция:
 
 ```bash
-make
+make ARCH=unix
 ```
 Запуск:
 
@@ -68,7 +68,11 @@ make
 Компиляция:
 
 ```bash
-make
+make ARCH=win64
+```
+
+```bash
+make ARCH=win86
 ```
 Запуск:
 ``` bash
