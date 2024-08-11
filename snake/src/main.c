@@ -3,6 +3,7 @@
 #define SNAKE_LENGTH   256
 #define SQUARE_SIZE     31
 #define FOODHEAD_SIZE 7
+#define GAME_LABEL "SNAKE GAME by EV"
 
 typedef struct Snake {
     Vector2 position;
@@ -21,9 +22,9 @@ typedef struct Food {
 
 static const int screenWidth = 1000;
 static const int screenHeight = 650;
-
+static int game_mode = 1;
 static int framesCounter = 0;
-static bool gameOver = false;
+static bool gameOver = true;
 static bool pause = false;
 
 static Food fruit = { 0 };
@@ -53,7 +54,6 @@ int main(void){
 
 void InitGame(void){
     framesCounter = 0;
-    gameOver = false;
     pause = false;
 
     counterTail = 1;
@@ -110,7 +110,7 @@ void UpdateGame(void){
                 snakePosition[i] = snake[i].position;
             }
 
-            if ((framesCounter%7) == 0){
+            if ((framesCounter% (7 - game_mode)) == 0){
                 for (int i = 0; i < counterTail; i++){
                     if (i == 0){
                         snake[0].position.x += snake[0].speed.x;
@@ -160,8 +160,24 @@ void UpdateGame(void){
             InitGame();
             gameOver = false;
         }
+        if (IsKeyPressed(KEY_ONE)){
+            game_mode = 1;
+            InitGame();
+            gameOver = false;
+        }
+        if (IsKeyPressed(KEY_TWO)){
+            game_mode = 2;
+            InitGame();
+            gameOver = false;
+        }
+        if (IsKeyPressed(KEY_THREE)){
+            game_mode = 3;
+            InitGame();
+            gameOver = false;
+        }
     }
 }
+
 
 void DrawGame(void){
     BeginDrawing();
@@ -185,7 +201,19 @@ void DrawGame(void){
                 DrawText("PAUSED", screenWidth/2 - MeasureText("PAUSED", 40)/2, screenHeight/2 - 40, 40, GRAY);
             }
         } else {
-            DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
+            ClearBackground(RAYWHITE);
+            for (int i = 0; i < screenWidth/SQUARE_SIZE + 1; i++){
+                DrawLineV((Vector2){SQUARE_SIZE*i + offset.x/2, offset.y/2}, (Vector2){SQUARE_SIZE*i + offset.x/2, screenHeight - offset.y/2}, LIGHTGRAY);
+            }
+            for (int i = 0; i < screenHeight/SQUARE_SIZE + 1; i++){
+                DrawLineV((Vector2){offset.x/2, SQUARE_SIZE*i + offset.y/2}, (Vector2){screenWidth - offset.x/2, SQUARE_SIZE*i + offset.y/2}, LIGHTGRAY);
+            }
+            DrawRectangle(GetScreenWidth()/2 - MeasureText(GAME_LABEL, 25)/2 - 5, GetScreenHeight()/2 - 120, MeasureText(GAME_LABEL, 25) + 10, 300, SKYBLUE);
+            DrawText(GAME_LABEL, GetScreenWidth()/2 - MeasureText(GAME_LABEL, 25)/2, GetScreenHeight()/2 - 60, 25, PINK);
+            DrawText(" Select gamemode by\n pressing num button", GetScreenWidth()/2 - MeasureText(GAME_LABEL, 20)/2, GetScreenHeight()/2 + 20, 20, WHITE);
+            DrawText("\t\t[1] \t\tEasy", GetScreenWidth()/2 - MeasureText(GAME_LABEL, 20)/2, GetScreenHeight()/2 + 80, 20, GREEN);
+            DrawText("\t\t[2] \tMedium", GetScreenWidth()/2 - MeasureText(GAME_LABEL, 20)/2, GetScreenHeight()/2 + 100, 20, BLUE);
+            DrawText("\t\t[3]  Ass pain", GetScreenWidth()/2 - MeasureText(GAME_LABEL, 20)/2, GetScreenHeight()/2 + 120, 20, RED);
         }
 
     EndDrawing();
