@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <stdio.h> // For sprintf
 
 #define SNAKE_LENGTH   256
 #define SQUARE_SIZE     31
@@ -36,6 +37,7 @@ static GameState game = {.diff = 1,
                         };
 static Food fruit = { 0 };
 static Snake snake[SNAKE_LENGTH] = { 0 };
+static Snake snake_second[SNAKE_LENGTH] = { 0 };
 static Vector2 snakePosition[SNAKE_LENGTH] = { 0 };
 static bool allowMove = false;
 static Vector2 offset = { 0 };
@@ -51,10 +53,11 @@ static void DrawMenu(void);
 static void DrawPauseMenu(void);
 static void HandleMenuKeys(void);
 static void HandleGameplayKeys(void);
-static void ProcessPlayer(void);
-static void ProcessFruit(void);
-static void DrawGameplayPve(void);
+static void ProcessPlayerSignleGame(void);
+static void ProcessFruitSingleGame(void);
+static void DrawGameplayPvePvp(void);
 static void HandlePauseMenuKeys(void);
+static void ProcessPlayerNotSingleGame(void);
 
 int main(void){
     InitWindow(screenWidth, screenHeight, "Snake Game");
@@ -76,15 +79,22 @@ void UpdateGame(void){
     if (!game.over && !game.pve){
         if (!game.pause){
             HandleGameplayKeys();
-            ProcessPlayer();
-            ProcessFruit();
+            ProcessPlayerSignleGame();
+            ProcessFruitSingleGame();
             framesCounter++;
         }
         if(game.pause){
             HandlePauseMenuKeys();
         }
     } else if (!game.over && game.pve){
-        // TODO
+        if (!game.pause){
+            HandleGameplayKeys();
+            ProcessPlayerNotSingleGame();
+            framesCounter++;
+        }
+        if(game.pause){
+            HandlePauseMenuKeys();
+        }
     } else {
         HandleMenuKeys();
     }
@@ -102,7 +112,7 @@ void DrawGame(void){
             DrawPauseMenu();
         }
     } else if(!game.over && game.pve){
-        DrawGameplayPve();
+        DrawGameplayPvePvp();
         if (game.pause){
             DrawPauseMenu();
         }
@@ -143,7 +153,7 @@ void InitGame(void){
     fruit.active = false;
 }
 
-void ProcessFruit(void){
+void ProcessFruitSingleGame(void){
     if (!fruit.active){
         fruit.active = true;
         fruit.position = (Vector2){ GetRandomValue(0, (screenWidth/SQUARE_SIZE) - 1)*SQUARE_SIZE + offset.x/2, GetRandomValue(0, (screenHeight/SQUARE_SIZE) - 1)*SQUARE_SIZE + offset.y/2 };
@@ -164,7 +174,7 @@ void ProcessFruit(void){
     }
 }
 
-void ProcessPlayer(void){
+void ProcessPlayerSignleGame(void){
     for (int i = 0; i < counterTail; i++){
         snakePosition[i] = snake[i].position;
     }
@@ -193,6 +203,37 @@ void ProcessPlayer(void){
     }
 }
 
+void ProcessPlayerNotSingleGame(void){
+    for (int i = 0; i < counterTail; i++){
+        snakePosition[i] = snake[i].position;
+    }
+    if ((framesCounter% (7 - game.diff)) == 0){
+        for (int i = 0; i < counterTail; i++){
+            if (i == 0){
+                snake[0].position.x += snake[0].speed.x;
+                snake[0].position.y += snake[0].speed.y;
+                allowMove = true;
+            }
+            else snake[i].position = snakePosition[i-1];
+        }
+    }
+
+    if (((snake[0].position.x) > (screenWidth / 2 - offset.x)) ||
+        ((snake[0].position.y) > (screenHeight - offset.y)) ||
+        (snake[0].position.x < 0) || (snake[0].position.y < 0))
+    {
+        game.over = true;
+        game.pve = false;
+    }
+
+    for (int i = 1; i < counterTail; i++){
+        if ((snake[0].position.x == snake[i].position.x) && (snake[0].position.y == snake[i].position.y)){
+            game.over = true;
+            game.pve = false;
+        }
+    }
+}
+
 void HandleMenuKeys(void){
     if (IsKeyPressed(KEY_ONE)){
         game.diff = 1;
@@ -210,7 +251,7 @@ void HandleMenuKeys(void){
         game.over = false;
     }
     if (IsKeyPressed(KEY_FOUR)){
-        game.diff = 2;
+        game.diff = 0;
         game.pve = true;
         InitGame();
         game.over = false;
@@ -220,9 +261,11 @@ void HandleMenuKeys(void){
 void HandlePauseMenuKeys(void){
     if (IsKeyPressed(KEY_ONE)){
         game.over = true;
+        game.pve = false;
     }
     if (IsKeyPressed(KEY_TWO)){
         game.pause = false;
+        game.pve = false;
     }
 }
 
@@ -264,14 +307,21 @@ void DrawGameplaySignle(void){
     }
     DrawCircle(fruit.position.x + SQUARE_SIZE/ 2 + 1, fruit.position.y + SQUARE_SIZE / 2 + 1, 16, RED);
     DrawRectangleV((Vector2){fruit.position.x + SQUARE_SIZE / 2 - FOODHEAD_SIZE / 2, fruit.position.y + SQUARE_SIZE / 2 - FOODHEAD_SIZE / 2}, (Vector2){FOODHEAD_SIZE, FOODHEAD_SIZE}, GOLD);
+    char cnt[10];
+    sprintf(cnt, "%d", counterTail);
+    DrawText(cnt, screenWidth - MeasureText(cnt, 40) - 15, 5, 40, GRAY);
 }
 
-void DrawGameplayPve(void){
+
+void DrawGameplayPvePvp(void){
     for (int i = 0; i < screenWidth/SQUARE_SIZE + 1; i++){
         DrawLineV((Vector2){SQUARE_SIZE*i + offset.x/2, offset.y/2}, (Vector2){SQUARE_SIZE*i + offset.x/2, screenHeight - offset.y/2}, LIGHTGRAY);
     }
     for (int i = 0; i < screenHeight/SQUARE_SIZE + 1; i++){
         DrawLineV((Vector2){offset.x/2, SQUARE_SIZE*i + offset.y/2}, (Vector2){screenWidth - offset.x/2, SQUARE_SIZE*i + offset.y/2}, LIGHTGRAY);
+    }
+    for (int i = 0; i < counterTail; i++){
+        DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
     }
     DrawText("You", screenWidth / 2 - 80, 0, 30, BLUE);
     DrawText("AI", screenWidth / 2 + 31, 0, 30, RED);
