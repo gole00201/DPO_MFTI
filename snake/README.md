@@ -14,9 +14,11 @@
 ## Управление
 
 - Одиночная игра:
+
 ![](./res/img/controls_solo.png)
 
 - Кооперативная игра:
+
 ![](./res/img/controls_pvp.png)
 
 
