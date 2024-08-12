@@ -18,6 +18,3 @@ endif # ARCH
 
 all:
 	$(GCC) $(SRC) -o $(BUILD_PATH) $(GCC_FLAG) $(INC) $(LINK)
-
-clean:
-	rm $(BUILD_PATH)

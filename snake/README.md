@@ -1,28 +1,54 @@
-# Snake Game
+# Snake Game by EV
 
-> [!WARNING]
-> Под Windows тестировалось только под **x86 wine**
+![](./res/img/menu.png)
+![](./res/img/pvp.png)
 
-Этот проект представляет собой простую игру «Змейка», использующую библиотеку Raylib.
+Этот проект представляет собой простую игру «Змейка», использующую библиотеку Raylib, с возможностью кооперативной игры.
+
+## Режимы игры
+- **Easy** Простой режим, для ознакомления и привыкания к управлению;
+- **Normal** Основной режим, для привыкнувших к управлению;
+- **Hard** Для отчаянных;
+- **PvP Mode** Для кооперативной игры.
+
+## Управление
+
+- Одиночная игра:
+![](./res/img/controls_solo.png)
+
+- Кооперативная игра:
+![](./res/img/controls_pvp.png)
+
 
 ## Структура проекта
 
-```css
+```bash
 ├── build
-│   └── snake_game
+│   ├── README.md
+│   └── snake_game
 ├── inc
-│   ├── raylib.h
-│   ├── raymath.h
-│   └── rlgl.h
-├── lib_unix
-│   └── libraylib.a
-├── lib_win
-│   ├── x64
-│   │   └── libraylib.a
-│   └── x86
-│       └── libraylib.a
+│   ├── raylib.h
+│   ├── raymath.h
+│   └── rlgl.h
+├── lib
+│   ├── lib_unix
+│   │   └── libraylib.a
+│   └── lib_win
+│       ├── x64
+│       │   └── libraylib.a
+│       └── x86
+│           └── libraylib.a
 ├── Makefile
 ├── README.md
+├── res
+│   ├── img
+│   │   ├── controls.png
+│   │   ├── controls_pvp.png
+│   │   ├── controls_solo.png
+│   │   ├── menu.png
+│   │   └── pvp.png
+│   └── sound
+│       └── ping.wav
 └── src
     └── main.c
 ```
@@ -78,22 +104,9 @@ make ARCH=win86
 ``` bash
 build\snake_game.exe
 ```
-## Управление
 
-```
-Стрелки: движение змейки
-P: пауза
-Enter: начать заново после окончания игры
-```
+## Зависимости
 
-### Зависимости
+**[Raylib 5.0](https://www.raylib.com/)**
 
-Raylib 5.0
-
-### Очистка
-
-Чтобы удалить скомпилированные файлы:
-
-``` bash
-make clean
-```
+![](./res/img/pgups.png)
