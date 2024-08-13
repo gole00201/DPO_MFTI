@@ -35,10 +35,20 @@ typedef struct GameState {
 static const int screenWidth = 800;
 static const int screenHeight = 600;
 static int framesCounter = 0;
-static GameState game = {.difficulty = 1, .over = true, .pause = false, .pvp = false, .himLose = false, .youLose = false};
-static Food fruit1 = { 0 }, fruit2 = { 0 };
-static Snake snake1[SNAKE_LENGTH] = { 0 }, snake2[SNAKE_LENGTH] = { 0 };
+
+static GameState game = {
+                         .difficulty = 1,
+                         .over = true,
+                         .pause = false,
+                         .pvp = false,
+                         .himLose = false,
+                         .youLose = false
+                        };
+
+static Food    fruit1 = { 0 },                       fruit2 = { 0 };
+static Snake   snake1[SNAKE_LENGTH] = { 0 },         snake2[SNAKE_LENGTH] = { 0 };
 static Vector2 snakePosition1[SNAKE_LENGTH] = { 0 }, snakePosition2[SNAKE_LENGTH] = { 0 };
+
 static bool allowMove1 = false;
 static bool allowMove2 = false;
 static Vector2 offset = { 0 };
@@ -49,17 +59,23 @@ static void InitGame(void);
 static void UpdateGame(Sound ping);
 static void DrawGame(Texture2D cntrlsTexturePvp, Texture2D cntrlsTextureSingle);
 static void UpdateDrawFrame(Texture2D cntrlsTexture, Texture2D cntrlsTextureSingle, Sound ping);
-static void DrawGameplay(bool isPvP);
+static void DrawGameplay();
 static void DrawMenu(void);
 static void DrawPauseMenu(void);
 static void HandleMenuKeys(void);
-static void HandleGameplayKeys(bool isPvP);
-static void ProcessPlayerMovement(bool isPvP);
+static void HandleGameplayKeys();
+static void ProcessPlayerMovement();
 static void HandlePauseMenuKeys(void);
-static void ProcessFruit(bool isPvP, Sound ping);
+static void ProcessFruit(Sound ping);
 static void DrawFruit(Food *fruit);
 static void DrawControlsPvP(Texture2D cntrlsTexture);
 static void DrawControlsSingle(Texture2D cntrlsTextureSingle);
+static void DrawBustedScore(int num);
+static void InitFruit(Food *fruit);
+static void InitSnake(Snake *snake, Vector2 snakePos, Color colorHead, Color colorBody);
+static void DrawPvpPlay(void);
+static void DrawSingePlay(void);
+static void DrawSnakeGrid(void);
 
 // Главная функция
 int main(void) {
@@ -94,24 +110,34 @@ void UpdateDrawFrame(Texture2D cntrlsTexture, Texture2D cntrlsTextureSingle, Sou
 
 // Обновление состояния игры
 void UpdateGame(Sound ping) {
-    if (!game.over) {
-        if (!game.pause) {
-            HandleGameplayKeys(game.pvp);
-            ProcessPlayerMovement(game.pvp);
-            ProcessFruit(game.pvp, ping);
-            framesCounter++;
-        } else {
-            HandlePauseMenuKeys();
-        }
-    } else {
-        if(game.controls){
-            if(IsKeyPressed(KEY_ENTER)){
-                game.controls = false;
-                game.over = false;
-                InitGame();
-            }
-        } else {
-            HandleMenuKeys();
+    /*
+        * Тут прежде всего важен приоритет хэндлеров. Приоритет в моем случае
+        * отоборажается порядком исполнения. Тот что первеее, тот и приоритетней.
+        * Перым идет хэндлер клавиш меню, потому что он меняет состоянией всей игры.
+        * Далее идет хэндлер клавиш паузы, потому что он меняет состояние конкретно
+        * исполняемой игры. Соответсвенно далее идет сам геймпей. Потому что он не
+        * влияет на состояние игры.
+    */
+    if(game.over && !game.controls) {
+        HandleMenuKeys();
+    }
+
+    if (!game.over && game.pause){
+        HandlePauseMenuKeys();
+    }
+
+    if (!game.over && !game.pause){
+        HandleGameplayKeys();
+        ProcessPlayerMovement();
+        ProcessFruit(ping);
+        framesCounter++;
+    }
+
+    if(game.over && game.controls){
+        if(IsKeyPressed(KEY_ENTER)){
+            game.controls = false;
+            game.over = false;
+            InitGame();
         }
     }
 
@@ -125,25 +151,29 @@ void DrawGame(Texture2D cntrlsTexture, Texture2D cntrlsTextureSingle) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
-    if (!game.over) {
-        DrawGameplay(game.pvp);
-        if (game.pause) {
-            DrawPauseMenu();
-        }
-    } else {
-        if(game.controls && game.pvp){
-            DrawControlsPvP(cntrlsTexture);
-        } else if (game.controls && !game.pvp){
-            DrawControlsSingle(cntrlsTextureSingle);
-        } else {
-            DrawMenu();
-        }
+    if (!game.over && !game.pause) {
+        DrawGameplay();
+    }
+
+    if (!game.over && game.pause){
+        DrawPauseMenu();
+    }
+
+    if(game.controls && game.pvp && game.over){
+        DrawControlsPvP(cntrlsTexture);
+    }
+
+    if (game.controls && !game.pvp && game.over){
+        DrawControlsSingle(cntrlsTextureSingle);
+    }
+
+    if(game.over && !game.controls){
+        DrawMenu();
     }
 
     EndDrawing();
 }
 
-// Инициализация игры
 void InitGame(void) {
     framesCounter = 0;
     game.pause = false;
@@ -151,37 +181,33 @@ void InitGame(void) {
     allowMove1 = false;
     counterTail2 = 1;
     allowMove2 = false;
-
     offset.x = screenWidth % SQUARE_SIZE;
     offset.y = screenHeight % SQUARE_SIZE;
+    Vector2 snake1Pos = (Vector2){ offset.x / 2, offset.y / 2 };
+    Vector2 snake2Pos = (Vector2){screenWidth / 2 + SQUARE_SIZE / 2, offset.y / 2 };
+    InitSnake(snake1, snake1Pos, BLUE, SKYBLUE);
+    InitSnake(snake2, snake2Pos, PURPLE, PINK);
+    InitFruit(&fruit1);
+    InitFruit(&fruit2);
+}
 
-    for (int i = 0; i < SNAKE_LENGTH; i++) {
-        snake1[i].position = (Vector2){ offset.x / 2, offset.y / 2 };
-        snake1[i].size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
-        snake1[i].speed = (Vector2){ SQUARE_SIZE, 0 };
-        snake1[i].color = (i == 0) ? DARKBLUE : BLUE;
-        snakePosition1[i] = (Vector2){ 0.0f, 0.0f };
-    }
+void InitFruit(Food *fruit){
+    fruit->size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
+    fruit->active = false;
+}
 
+void InitSnake(Snake *snake, Vector2 snakePos, Color colorHead, Color colorBody){
     for (int i = 0; i < SNAKE_LENGTH; i++) {
-        snake2[i].position = (Vector2){screenWidth / 2 + SQUARE_SIZE / 2, offset.y / 2 };
-        snake2[i].size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
-        snake2[i].speed = (Vector2){ SQUARE_SIZE, 0 };
-        snake2[i].color = (i == 0) ? PURPLE : PINK;
+        snake[i].position = snakePos;
+        snake[i].size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
+        snake[i].speed = (Vector2){ SQUARE_SIZE, 0 };
+        snake[i].color = (i == 0) ? colorHead : colorBody;
         snakePosition2[i] = (Vector2){ 0.0f, 0.0f };
     }
-
-    fruit1.size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
-    fruit1.color = LIME;
-    fruit1.active = false;
-
-    fruit2.size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
-    fruit2.color = LIME;
-    fruit2.active = false;
 }
 
 // Обработка движений игрока и противника
-void ProcessPlayerMovement(bool isPvP) {
+void ProcessPlayerMovement() {
     // Первая змейка
     if(!game.youLose){
         for (int i = 0; i < counterTail1; i++) {
@@ -199,12 +225,12 @@ void ProcessPlayerMovement(bool isPvP) {
                 }
             }
         }
-        float border_x = (isPvP ? screenWidth / 2 - offset.x : screenWidth - offset.x);
+        float border_x = (game.pvp ? screenWidth / 2 - offset.x : screenWidth - offset.x);
         float border_y = screenHeight - offset.y;
         bool outOfBounds = (snake1[0].position.x > border_x) ||
-                        (snake1[0].position.y > border_y) ||
-                        (snake1[0].position.x < 0) ||
-                        (snake1[0].position.y < 0);
+                           (snake1[0].position.y > border_y) ||
+                           (snake1[0].position.x < 0) ||
+                           (snake1[0].position.y < 0);
 
         if (outOfBounds) {
             game.youLose = true;
@@ -218,8 +244,11 @@ void ProcessPlayerMovement(bool isPvP) {
             }
         }
     }
-
-    if(!isPvP){
+    if(game.youLose && !game.pvp){
+        game.over = true;
+        game.youLose = false;
+    }
+    if(!game.pvp){
         return;
     }
     // Вторая змейка
@@ -256,7 +285,7 @@ void ProcessPlayerMovement(bool isPvP) {
         }
 
     }
-    if(game.youLose && game.himLose){
+    if(game.youLose && game.himLose && game.pvp){
         game.over = true;
         game.himLose = false;
         game.youLose = false;
@@ -265,10 +294,10 @@ void ProcessPlayerMovement(bool isPvP) {
 }
 
 // Обработка фруктов
-void ProcessFruit(bool isPvP, Sound ping) {
+void ProcessFruit(Sound ping) {
     if (!fruit1.active) {
         fruit1.active = true;
-        float border_x = isPvP ? (screenWidth / 2 / SQUARE_SIZE - 1) : ((screenWidth / SQUARE_SIZE) - 1);
+        float border_x = game.pvp ? (screenWidth / 2 / SQUARE_SIZE - 1) : ((screenWidth / SQUARE_SIZE) - 1);
         float border_y = ((screenHeight / SQUARE_SIZE) - 1);
         float x = GetRandomValue(0, border_x) * SQUARE_SIZE + offset.x / 2;
         float y = GetRandomValue(0, border_y) * SQUARE_SIZE + offset.y / 2;
@@ -294,7 +323,7 @@ void ProcessFruit(bool isPvP, Sound ping) {
         fruit1.active = false;
     }
 
-    if (!fruit2.active && isPvP) {
+    if (!fruit2.active && game.pvp) {
         fruit2.active = true;
         float border_x_start = (screenWidth / 2 + SQUARE_SIZE) / SQUARE_SIZE;
         float border_x_end = screenWidth / SQUARE_SIZE - 1;
@@ -312,7 +341,7 @@ void ProcessFruit(bool isPvP, Sound ping) {
             }
         }
     }
-    if(isPvP){
+    if(game.pvp){
         getFood =(snake2[0].position.x < (fruit2.position.x + fruit2.size.x) &&
                  (snake2[0].position.y < (fruit2.position.y + fruit2.size.y) &&
                  (snake2[0].position.x + snake2[0].size.x) > fruit2.position.x) &&
@@ -348,7 +377,7 @@ void HandleMenuKeys(void) {
 }
 
 // Обработка нажатий клавиш в игровом процессе
-void HandleGameplayKeys(bool isPvP) {
+void HandleGameplayKeys() {
     // Первая змейка
     if (IsKeyPressed(KEY_D) && (snake1[0].speed.x == 0) && allowMove1) {
         snake1[0].speed = (Vector2){ SQUARE_SIZE, 0 };
@@ -366,23 +395,20 @@ void HandleGameplayKeys(bool isPvP) {
         snake1[0].speed = (Vector2){ 0, SQUARE_SIZE };
         allowMove1 = false;
     }
-    if(!isPvP){
-        return;
-    }
     // Вторая змейка
-    if (IsKeyPressed(KEY_RIGHT) && (snake2[0].speed.x == 0) && allowMove2) {
+    if (IsKeyPressed(KEY_RIGHT) && (snake2[0].speed.x == 0) && allowMove2 && game.pvp) {
         snake2[0].speed = (Vector2){ SQUARE_SIZE, 0 };
         allowMove2 = false;
     }
-    if (IsKeyPressed(KEY_LEFT) && (snake2[0].speed.x == 0) && allowMove2) {
+    if (IsKeyPressed(KEY_LEFT) && (snake2[0].speed.x == 0) && allowMove2 && game.pvp) {
         snake2[0].speed = (Vector2){ -SQUARE_SIZE, 0 };
         allowMove2 = false;
     }
-    if (IsKeyPressed(KEY_UP) && (snake2[0].speed.y == 0) && allowMove2) {
+    if (IsKeyPressed(KEY_UP) && (snake2[0].speed.y == 0) && allowMove2 && game.pvp) {
         snake2[0].speed = (Vector2){ 0, -SQUARE_SIZE };
         allowMove2 = false;
     }
-    if (IsKeyPressed(KEY_DOWN) && (snake2[0].speed.y == 0) && allowMove2) {
+    if (IsKeyPressed(KEY_DOWN) && (snake2[0].speed.y == 0) && allowMove2 && game.pvp) {
         snake2[0].speed = (Vector2){ 0, SQUARE_SIZE };
         allowMove2 = false;
     }
@@ -393,6 +419,8 @@ void HandlePauseMenuKeys(void) {
     if (IsKeyPressed(KEY_ONE)) {
         game.over = true;
         game.pvp = false;
+        game.himLose = false;
+        game.youLose = false;
     }
     if (IsKeyPressed(KEY_TWO)) {
         game.pause = false;
@@ -400,47 +428,78 @@ void HandlePauseMenuKeys(void) {
 }
 
 // Рисование игрового процесса
-void DrawGameplay(bool isPvP) {
+void DrawGameplay() {
+    /* Игровая сетка */
+    DrawSnakeGrid();
+    /* Интерактивные объекты первой половины */
+    DrawSingePlay();
+    if(game.pvp){
+        /* Интерактивные объекты второй половины */
+        DrawPvpPlay();
+    }
+
+    /* Надпись для первого умершего */
+    if (game.pvp && game.youLose){
+        DrawBustedScore(1);
+    }
+    if (game.pvp && game.himLose){
+        DrawBustedScore(2);
+    }
+}
+
+void DrawSnakeGrid(void){
     for (int i = 0; i < screenWidth / SQUARE_SIZE + 1; i++) {
         DrawLineV((Vector2){SQUARE_SIZE * i + offset.x / 2, offset.y / 2}, (Vector2){SQUARE_SIZE * i + offset.x / 2, screenHeight - offset.y / 2}, LIGHTGRAY);
     }
     for (int i = 0; i < screenHeight / SQUARE_SIZE + 1; i++) {
         DrawLineV((Vector2){offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, (Vector2){screenWidth - offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, LIGHTGRAY);
     }
-    // Рисовать первую змейку
+}
+
+void DrawSingePlay(){
+    /* Первая змейка */
     if(!game.youLose){
         for (int i = 0; i < counterTail1; i++) {
             DrawRectangleV(snake1[i].position, snake1[i].size, snake1[i].color);
         }
     }
     DrawFruit(&fruit1);
-    if(isPvP){
-        if(game.youLose){
-            char score[1024];
-            sprintf(score, "%d", counterTail1);
-            DrawText("BUSTED", screenWidth / 2 - screenWidth / 4 - MeasureText("BUSTED", 50) / 2, screenHeight / 2 - 50, 50, BLACK);
-            DrawText(score, screenWidth / 2 - screenWidth / 4 - MeasureText(score, 50) / 2, screenHeight / 2 + 70, 50, BLACK);
+    /* Счетчик игрока */
+    char cnt[10];
+    sprintf(cnt, "%d", counterTail1);
+    DrawText(cnt, 15, 5, 40, GRAY);
+}
+
+void DrawPvpPlay(){
+    /* Лейблы для игроков */
+    DrawText("You", screenWidth / 2 - 80, 0, 30, BLUE);
+    DrawText("Him", screenWidth / 2 + 31, 0, 30, RED);
+    /* Центральный барьер */
+    DrawRectangle(screenWidth / 2 - SQUARE_SIZE / 2 - 1 , 0, SQUARE_SIZE, screenHeight, BROWN);
+    DrawFruit(&fruit2);
+    /* Вторая змейка */
+    if(!game.himLose){
+        for (int i = 0; i < counterTail2; i++) {
+            DrawRectangleV(snake2[i].position, snake2[i].size, snake2[i].color);
         }
-        if(game.himLose){
-            char score[1024];
+    }
+    char cnt[10];
+    sprintf(cnt, "%d", counterTail2);
+    DrawText(cnt, screenWidth - MeasureText(cnt, 40) - 15, 5, 40, GRAY);
+}
+
+void DrawBustedScore(int num){
+    if(num == 1){
+        char score[1024];
+        sprintf(score, "%d", counterTail1);
+        DrawText("BUSTED", screenWidth / 2 - screenWidth / 4 - MeasureText("BUSTED", 50) / 2, screenHeight / 2 - 50, 50, BLACK);
+        DrawText(score, screenWidth / 2 - screenWidth / 4 - MeasureText(score, 50) / 2, screenHeight / 2 + 70, 50, BLACK);
+    }
+    if(num == 2){
+        char score[1024];
             sprintf(score, "%d", counterTail2);
             DrawText("BUSTED", screenWidth / 2 + screenWidth / 4 - MeasureText("BUSTED", 50) / 2, screenHeight / 2 - 50, 50, BLACK);
             DrawText(score, screenWidth / 2 + screenWidth / 4 - MeasureText(score, 50) / 2, screenHeight / 2 + 70, 50, BLACK);
-        }
-        DrawText("You", screenWidth / 2 - 80, 0, 30, BLUE);
-        DrawText("Him", screenWidth / 2 + 31, 0, 30, RED);
-        DrawRectangle(screenWidth / 2 - SQUARE_SIZE / 2 - 1 , 0, SQUARE_SIZE, screenHeight, BROWN);
-        DrawFruit(&fruit2);
-        // Рисовать вторую змейку
-        if(!game.himLose){
-            for (int i = 0; i < counterTail2; i++) {
-                DrawRectangleV(snake2[i].position, snake2[i].size, snake2[i].color);
-            }
-        }
-    } else {
-        char cnt[10];
-        sprintf(cnt, "%d", counterTail1);
-        DrawText(cnt, screenWidth - MeasureText(cnt, 40) - 15, 5, 40, GRAY);
     }
 }
 
