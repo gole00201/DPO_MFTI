@@ -1,3 +1,12 @@
+/**
+ * @file main.c
+ * @author Volkov Egor
+ * @brief Чтобы не возиться с кодировкой сделал in English -_-
+ * @version 0.1
+ * @date 2024-08-25
+ * @copyright Copyright (c) 2024
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -11,16 +20,16 @@ double f1(double x) { return 0.6 * x + 3; }
 double f2(double x) { return pow(x - 2, 3) - 1; }
 double f3(double x) { return 3 / x; }
 
-// Функция нахождения корня уравнения f(x) = g(x) на отрезке [a, b]
+// Функция нахождения корня уравнения f(x) = g(x) на отрезке a, b
 int find_root(func f, func g, double a, double b, double eps, double *root, int *iterations) {
     double fa = f(a) - g(a);
     double fb = f(b) - g(b);
 
     if (fa * fb > 0) {
-        return -1; // Нет корней или корни вне отрезка
+        return -1;
     }
 
-    *iterations = 0; // Инициализируем количество итераций
+    *iterations = 0;
 
     while ((b - a) / 2 > eps) {
         (*iterations)++;
