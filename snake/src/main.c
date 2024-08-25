@@ -510,7 +510,7 @@ void DrawFruit(Food *fruit){
     DrawRectangleV((Vector2){fruitPosX, fruitPosY}, (Vector2){FOODHEAD_SIZE, FOODHEAD_SIZE}, GOLD);
 }
 
-// Рисование меню
+/* Всякие менюшки */
 void DrawMenu(void) {
     DrawText(GAME_LABEL, screenWidth / 2 - MeasureText(GAME_LABEL, 40) / 2, screenHeight / 2 - 130, 40, PINK);
     DrawText("1 - Easy", screenWidth / 2 - MeasureText("1 - Easy", 20) / 2, screenHeight / 2 - 60, 20, BLACK);
@@ -519,7 +519,6 @@ void DrawMenu(void) {
     DrawText("4 - PvP Mode", screenWidth / 2 - MeasureText("4 - PvP Mode", 20) / 2, screenHeight / 2 + 60, 20, BLACK);
 }
 
-// Рисование паузного меню
 void DrawPauseMenu(void) {
     DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 60, 40, BLACK);
     DrawText("1 - MENU", screenWidth / 2 - MeasureText("1 - MENU", 20) / 2, screenHeight / 2, 20, BLACK);
